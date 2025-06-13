@@ -14,7 +14,7 @@ This version adds H3K27Ac ChIP-seq data as an additional input feature alongside
 git clone https://github.com/javrodriguez/corigami_plus_h3k27ac.git
 
 ## Create environment
-cd C.Origami_vPlusH3K27Ac
+cd corigami_plus_h3k27ac
 
 conda create -n corigami_plus_h3k27ac python==3.9 pytorch==1.12.0 torchvision==0.13.0 pytorch-cuda=11.8 pandas==1.3.0 matplotlib==3.3.2 pybigwig==0.3.18 omegaconf==2.1.1 tqdm==4.64.0 pytorch-lightning=1.9 scikit-image lightning-bolts mkl==2024.0 -c pytorch -c nvidia
 

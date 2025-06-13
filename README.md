@@ -299,7 +299,7 @@ Tan et al. Cell-type-specific prediction of 3D chromatin organization enables hi
 
 # C.Origami with H3K27Ac
 
-This is a modified version of C.Origami that includes H3K27Ac as an additional genomic feature for improved chromatin architecture prediction. The original C.Origami documentation can be found [here](https://github.com/tanjimin/C.Origami).
+This is a modified version of C.Origami that includes H3K27Ac as an additional genomic feature for improved chromatin architecture prediction. This is NOT the official C.Origami implementation. The official C.Origami can be found at [https://github.com/tanjimin/C.Origami](https://github.com/tanjimin/C.Origami).
 
 ## Modifications
 
@@ -371,6 +371,43 @@ In addition to the original data requirements, you will need:
 - The input window size remains 2,097,152 bp (2Mb) as in the original version
 - All preprocessing and data loading functions have been updated to handle the new feature
 - The screening and editing modules now include H3K27Ac in their perturbation calculations
+
+## Original C.Origami
+
+This is a modified version of the original C.Origami model from "Cell type-specific prediction of 3D chromatin organization enables high-throughput in silico genetic screening" (Tan et al. *Nat Biotechnol* 2023. https://doi.org/10.1038/s41587-022-01612-8).
+
+For the original implementation and documentation, please visit:
+- [Official C.Origami GitHub Repository](https://github.com/tanjimin/C.Origami)
+- [Original Paper](https://doi.org/10.1038/s41587-022-01612-8)
+
+## Citation
+
+If you use this modified version of C.Origami in your project, please cite both:
+
+1. The original C.Origami paper:
+```BibTeX
+@article{tan2023nbt,
+    title = {Cell-type-specific prediction of 3D chromatin organization enables high-throughput in silico genetic screening},
+    author = {Tan, Jimin and Shenker-Tauris, Nina and Rodriguez-Hernaez, Javier and Wang, Eric and Sakellaropoulos, Theodore and Boccalatte, Francesco and Thandapani, Palaniraja and Skok, Jane and Aifantis, Iannis and Feny{\"o}, David and Xia, Bo and Tsirigos, Aristotelis},
+    journal = {Nature Biotechnology},
+    date = {2023/01/09},
+    doi = {10.1038/s41587-022-01612-8},
+    id = {Tan2023},
+    isbn = {1546-1696},
+    url = {https://doi.org/10.1038/s41587-022-01612-8},
+    year = {2023},
+    publisher = {Nature Publishing Group}}
+```
+
+2. This modified version:
+```BibTeX
+@software{corigami_h3k27ac,
+    author = {Rodriguez, Javier},
+    title = {C.Origami with H3K27Ac},
+    year = {2024},
+    url = {https://github.com/javrodriguez/C.Origami_H3K27Ac_ATAC_CTCF}
+}
+```
 
 [Models](#download-model-and-other-relevant-resource-files) |
 [GitHub](https://github.com/tanjimin/C.Origami) |

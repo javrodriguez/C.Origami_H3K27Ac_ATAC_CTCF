@@ -26,13 +26,13 @@ class GenomeDataset(Dataset):
         # Assign train/val/test chromosomes
         self.chr_names = self.get_chr_names(genome_assembly)
         if mode == 'train':
+            self.chr_names.remove('chr2')
             self.chr_names.remove('chr10')
-            self.chr_names.remove('chr15')
             self.chr_names.remove('chrX') # chrX removed for consistency
         elif mode == 'val':
-            self.chr_names = ['chr10']
+            self.chr_names = ['chr2']
         elif mode == 'test':
-            self.chr_names = ['chr15']
+            self.chr_names = ['chr10']
         else:
             raise Exception(f'Unknown mode {mode}')
 

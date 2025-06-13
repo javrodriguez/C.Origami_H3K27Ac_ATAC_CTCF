@@ -184,6 +184,8 @@ class TrainModule(pl.LightningModule):
         genomic_features = {'ctcf_log2fc' : {'file_name' : 'ctcf_log2fc.bw',
                                              'norm' : None },
                             'atac' : {'file_name' : 'atac.bw',
+                                             'norm' : 'log' },
+                            'h3k27ac' : {'file_name' : 'h3k27ac.bw',
                                              'norm' : 'log' }}
         dataset = genome_dataset.GenomeDataset(celltype_root, 
                                 args.dataset_assembly,
@@ -229,7 +231,7 @@ class TrainModule(pl.LightningModule):
 
     def get_model(self, args):
         model_name =  args.model_type
-        num_genomic_features = 2
+        num_genomic_features = 3
         ModelClass = getattr(corigami_models, model_name)
         model = ModelClass(num_genomic_features, mid_hidden = 256)
         return model

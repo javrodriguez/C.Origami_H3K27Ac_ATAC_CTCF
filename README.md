@@ -297,6 +297,81 @@ The following lists titles of papers from the C.Origami project.
 
 Tan et al. Cell-type-specific prediction of 3D chromatin organization enables high-throughput in silico genetic screening. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-022-01612-8
 
+# C.Origami with H3K27Ac
+
+This is a modified version of C.Origami that includes H3K27Ac as an additional genomic feature for improved chromatin architecture prediction. The original C.Origami documentation can be found [here](https://github.com/tanjimin/C.Origami).
+
+## Modifications
+
+This version adds H3K27Ac ChIP-seq data as an additional input feature alongside the original CTCF ChIP-seq and ATAC-seq data. The model architecture has been modified to incorporate this new feature, which can provide additional information about active regulatory regions.
+
+## Inference
+
+The inference pipeline has been updated to handle the new H3K27Ac feature. All inference commands now require an additional parameter `--hkac` that specifies the path to H3K27Ac ChIP-seq bigwig files.
+
+### Prediction
+
+```bash
+python -m corigami.inference.prediction \
+    --out outputs \
+    --celltype GM12878 \
+    --chr chr1 \
+    --start 1000000 \
+    --model path/to/model/checkpoint.pt \
+    --seq path/to/sequence/files \
+    --ctcf path/to/ctcf/files \
+    --atac path/to/atac/files \
+    --hkac path/to/h3k27ac/files
+```
+
+### Screening
+
+```bash
+python -m corigami.inference.screening \
+    --out outputs \
+    --celltype GM12878 \
+    --chr chr1 \
+    --screen-start 1000000 \
+    --screen-end 2000000 \
+    --perturb-width 1000 \
+    --step-size 1000 \
+    --model path/to/model/checkpoint.pt \
+    --seq path/to/sequence/files \
+    --ctcf path/to/ctcf/files \
+    --atac path/to/atac/files \
+    --hkac path/to/h3k27ac/files
+```
+
+### Editing/Perturbation
+
+```bash
+python -m corigami.inference.editing \
+    --out outputs \
+    --celltype GM12878 \
+    --chr chr1 \
+    --start 1000000 \
+    --del-start 1500000 \
+    --del-width 1000 \
+    --model path/to/model/checkpoint.pt \
+    --seq path/to/sequence/files \
+    --ctcf path/to/ctcf/files \
+    --atac path/to/atac/files \
+    --hkac path/to/h3k27ac/files
+```
+
+## Data Requirements
+
+In addition to the original data requirements, you will need:
+- H3K27Ac ChIP-seq data in bigwig format
+- The model checkpoint must be trained with the H3K27Ac feature included
+
+## Notes
+
+- The H3K27Ac data is processed with log normalization, similar to ATAC-seq
+- The input window size remains 2,097,152 bp (2Mb) as in the original version
+- All preprocessing and data loading functions have been updated to handle the new feature
+- The screening and editing modules now include H3K27Ac in their perturbation calculations
+
 [Models](#download-model-and-other-relevant-resource-files) |
 [GitHub](https://github.com/tanjimin/C.Origami) |
 [Publications](#list-of-papers)

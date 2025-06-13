@@ -31,6 +31,8 @@ def main():
                         help='Path to the folder where the CTCF ChIP-seq .bw files are stored', required=True)
     parser.add_argument('--atac', dest='atac_path', 
                         help='Path to the folder where the ATAC-seq .bw files are stored', required=True)
+    parser.add_argument('--hkac', dest='h3k27ac_path', 
+                        help='Path to the folder where the H3K27Ac ChIP-seq .bw files are stored', required=True)
 
     # Screening related params
     parser.add_argument('--screen-start', dest='screen_start', type=int,
@@ -74,14 +76,14 @@ def main():
     screening(args.output_path, args.celltype, args.chr_name, args.screen_start, 
               args.screen_end, args.perturb_width, args.step_size,
               args.model_path,
-              args.seq_path, args.ctcf_path, args.atac_path, 
+              args.seq_path, args.ctcf_path, args.atac_path, args.h3k27ac_path,
               args.save_pred, args.save_perturbation,
               args.save_diff, args.save_impact_score,
               args.save_bedgraph, args.plot_impact_score, args.plot_frames)
 
-def screening(output_path, celltype, chr_name, screen_start, screen_end, perturb_width, step_size, model_path, seq_path, ctcf_path, atac_path, save_pred = False, save_deletion = False, save_diff = True, save_impact_score = True, save_bedgraph = True, plot_impact_score = True, plot_frames = False):
+def screening(output_path, celltype, chr_name, screen_start, screen_end, perturb_width, step_size, model_path, seq_path, ctcf_path, atac_path, h3k27ac_path, save_pred = False, save_deletion = False, save_diff = True, save_impact_score = True, save_bedgraph = True, plot_impact_score = True, plot_frames = False):
     # Store data and model in memory
-    seq, ctcf, atac = infer.load_data_default(chr_name, seq_path, ctcf_path, atac_path)
+    seq, ctcf, atac, h3k27ac = infer.load_data_default(chr_name, seq_path, ctcf_path, atac_path, h3k27ac_path)
     model = model_utils.load_default(model_path)
     # Generate pertubation windows
     # Windows are centered. Thus, both sides have enough margins
@@ -95,7 +97,7 @@ def screening(output_path, celltype, chr_name, screen_start, screen_end, perturb
     print('Screening...')
     for w_start in tqdm(windows):
         pred_start = int(w_start + perturb_width / 2 - 2097152 / 2)
-        pred, pred_deletion, diff_map = predict_difference(chr_name, pred_start, int(w_start), perturb_width, model, seq, ctcf, atac)
+        pred, pred_deletion, diff_map = predict_difference(chr_name, pred_start, int(w_start), perturb_width, model, seq, ctcf, atac, h3k27ac)
         if plot_frames:
             plot_combination(output_path, celltype, chr_name, pred_start, w_start, perturb_width, pred, pred_deletion, diff_map, 'screening')
         preds = np.append(preds, np.expand_dims(pred, 0), axis = 0)
@@ -108,16 +110,16 @@ def screening(output_path, celltype, chr_name, screen_start, screen_end, perturb
     figure = plot.plot()
     plot.save_data(figure, save_pred, save_deletion, save_diff, save_impact_score, save_bedgraph)
 
-def predict_difference(chr_name, start, deletion_start, deletion_width, model, seq, ctcf, atac):
+def predict_difference(chr_name, start, deletion_start, deletion_width, model, seq, ctcf, atac, h3k27ac):
     # Define window which accomodates deletion
     end = start + 2097152 + deletion_width
-    seq_region, ctcf_region, atac_region = infer.get_data_at_interval(chr_name, start, end, seq, ctcf, atac)
+    seq_region, ctcf_region, atac_region, h3k27ac_region = infer.get_data_at_interval(chr_name, start, end, seq, ctcf, atac, h3k27ac)
     # Unmodified inputs
-    inputs = preprocess_prediction(chr_name, start, seq_region, ctcf_region, atac_region)
+    inputs = preprocess_prediction(chr_name, start, seq_region, ctcf_region, atac_region, h3k27ac_region)
     pred = model(inputs)[0].detach().cpu().numpy() # Prediction
     # Inputs with deletion
     inputs_deletion = preprocess_deletion(chr_name, start, deletion_start, 
-            deletion_width, seq_region, ctcf_region, atac_region) # Get data
+            deletion_width, seq_region, ctcf_region, atac_region, h3k27ac_region) # Get data
     pred_deletion = model(inputs_deletion)[0].detach().cpu().numpy() # Prediction
     # Compare inputs:
     diff_map = pred_deletion - pred
@@ -140,25 +142,25 @@ def plot_combination(output_path, celltype, chr_name, start, deletion_start, del
             deletion_width, padding_type = 'zero', show_deletion_line = False)
     plot.plot()
 
-def preprocess_prediction(chr_name, start, seq_region, ctcf_region, atac_region):
+def preprocess_prediction(chr_name, start, seq_region, ctcf_region, atac_region, h3k27ac_region):
     # Delete inputs
-    seq_region, ctcf_region, atac_region = trim(seq_region, ctcf_region, 
-                                                atac_region)
+    seq_region, ctcf_region, atac_region, h3k27ac_region = trim(seq_region, ctcf_region, 
+                                                atac_region, h3k27ac_region)
     # Process inputs
-    inputs = infer.preprocess_default(seq_region, ctcf_region, atac_region)
+    inputs = infer.preprocess_default(seq_region, ctcf_region, atac_region, h3k27ac_region)
     return inputs
 
-def preprocess_deletion(chr_name, start, deletion_start, deletion_width, seq_region, ctcf_region, atac_region):
+def preprocess_deletion(chr_name, start, deletion_start, deletion_width, seq_region, ctcf_region, atac_region, h3k27ac_region):
     # Delete inputs
-    seq_region, ctcf_region, atac_region = editing.deletion_with_padding(start, 
+    seq_region, ctcf_region, atac_region, h3k27ac_region = editing.deletion_with_padding(start, 
             deletion_start, deletion_width, seq_region, ctcf_region, 
-            atac_region, end_padding_type = 'zero')
+            atac_region, h3k27ac_region, end_padding_type = 'zero')
     # Process inputs
-    inputs = infer.preprocess_default(seq_region, ctcf_region, atac_region)
+    inputs = infer.preprocess_default(seq_region, ctcf_region, atac_region, h3k27ac_region)
     return inputs
 
-def trim(seq, ctcf, atac, window = 2097152):
-    return seq[:window], ctcf[:window], atac[:window]
+def trim(seq, ctcf, atac, h3k27ac, window = 2097152):
+    return seq[:window], ctcf[:window], atac[:window], h3k27ac[:window]
 
 if __name__ == '__main__':
     main()

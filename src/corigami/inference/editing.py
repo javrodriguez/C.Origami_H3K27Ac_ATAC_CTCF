@@ -32,6 +32,8 @@ def main():
                         help='Path to the folder where the CTCF ChIP-seq .bw files are stored', required=True)
     parser.add_argument('--atac', dest='atac_path', 
                         help='Path to the folder where the ATAC-seq .bw files are stored', required=True)
+    parser.add_argument('--hkac', dest='h3k27ac_path', 
+                        help='Path to the folder where the H3K27Ac ChIP-seq .bw files are stored', required=True)
 
     # Deletion related params
     parser.add_argument('--del-start', dest='deletion_start', type=int,
@@ -49,22 +51,22 @@ def main():
     single_deletion(args.output_path, args.celltype, args.chr_name, args.start, 
                     args.deletion_start, args.deletion_width, 
                     args.model_path,
-                    args.seq_path, args.ctcf_path, args.atac_path, 
+                    args.seq_path, args.ctcf_path, args.atac_path, args.h3k27ac_path,
                     show_deletion_line = not args.hide_deletion_line,
                     end_padding_type = args.end_padding_type)
 
-def single_deletion(output_path, celltype, chr_name, start, deletion_start, deletion_width, model_path, seq_path, ctcf_path, atac_path, show_deletion_line = True, end_padding_type = 'zero'):
+def single_deletion(output_path, celltype, chr_name, start, deletion_start, deletion_width, model_path, seq_path, ctcf_path, atac_path, h3k27ac_path, show_deletion_line = True, end_padding_type = 'zero'):
 
     # Define window which accomodates deletion
     window = 2097152 + deletion_width
-    seq_region, ctcf_region, atac_region = infer.load_region(chr_name, 
-            start, seq_path, ctcf_path, atac_path, window = window)
+    seq_region, ctcf_region, atac_region, h3k27ac_region = infer.load_region(chr_name, 
+            start, seq_path, ctcf_path, atac_path, h3k27ac_path, window = window)
     # Delete inputs
-    seq_region, ctcf_region, atac_region = deletion_with_padding(start, 
+    seq_region, ctcf_region, atac_region, h3k27ac_region = deletion_with_padding(start, 
             deletion_start, deletion_width, seq_region, ctcf_region, 
-            atac_region, end_padding_type)
+            atac_region, h3k27ac_region, end_padding_type)
     # Prediction
-    pred = infer.prediction(seq_region, ctcf_region, atac_region, model_path)
+    pred = infer.prediction(seq_region, ctcf_region, atac_region, h3k27ac_region, model_path)
     # Initialize plotting class
     plot = plot_utils.MatrixPlotDeletion(output_path, pred, 'deletion', 
             celltype, chr_name, start, deletion_start, deletion_width, 
@@ -72,32 +74,34 @@ def single_deletion(output_path, celltype, chr_name, start, deletion_start, dele
             show_deletion_line = show_deletion_line)
     plot.plot()
 
-def deletion_with_padding(start, deletion_start, deletion_width, seq_region, ctcf_region, atac_region, end_padding_type):
+def deletion_with_padding(start, deletion_start, deletion_width, seq_region, ctcf_region, atac_region, h3k27ac_region, end_padding_type):
     ''' Delete all signals at a specfied location with corresponding padding at the end '''
     # end_padding_type takes values of either 'zero' or 'follow'
     if end_padding_type == 'zero':
-        seq_region, ctcf_region, atac_region = zero_region(seq_region, 
-                ctcf_region, atac_region)
+        seq_region, ctcf_region, atac_region, h3k27ac_region = zero_region(seq_region, 
+                ctcf_region, atac_region, h3k27ac_region)
     elif end_padding_type == 'follow': pass
     else: raise Exception('unknown padding')
     # Deletion
-    seq_region, ctcf_region, atac_region = delete(deletion_start - start, 
+    seq_region, ctcf_region, atac_region, h3k27ac_region = delete(deletion_start - start, 
             deletion_start - start + deletion_width, 
-            seq_region, ctcf_region, atac_region)
-    return seq_region, ctcf_region, atac_region
+            seq_region, ctcf_region, atac_region, h3k27ac_region)
+    return seq_region, ctcf_region, atac_region, h3k27ac_region
 
-def zero_region(seq, ctcf, atac, window = 2097152):
-    ''' Replace signal with zero. N for sequence and 0 for CTCF and ATAC '''
+def zero_region(seq, ctcf, atac, h3k27ac, window = 2097152):
+    ''' Replace signal with zero. N for sequence and 0 for CTCF, ATAC and H3K27Ac '''
     seq[window:] = [0, 0, 0, 0, 1]
     ctcf[window:] = 0
     atac[window:] = 0
-    return seq, ctcf, atac
+    h3k27ac[window:] = 0
+    return seq, ctcf, atac, h3k27ac
 
-def delete(start, end, seq, ctcf, atac, window = 2097152):
+def delete(start, end, seq, ctcf, atac, h3k27ac, window = 2097152):
     seq = np.delete(seq, np.s_[start:end], axis = 0)
     ctcf = np.delete(ctcf, np.s_[start:end])
     atac = np.delete(atac, np.s_[start:end])
-    return seq[:window], ctcf[:window], atac[:window]
+    h3k27ac = np.delete(h3k27ac, np.s_[start:end])
+    return seq[:window], ctcf[:window], atac[:window], h3k27ac[:window]
 
 if __name__ == '__main__':
     main()

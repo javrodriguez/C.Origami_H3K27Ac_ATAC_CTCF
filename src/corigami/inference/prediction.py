@@ -22,18 +22,19 @@ def main():
                         help='Path to the folder where the CTCF ChIP-seq .bw files are stored', required=True)
   parser.add_argument('--atac', dest='atac_path', 
                         help='Path to the folder where the ATAC-seq .bw files are stored', required=True)
+  parser.add_argument('--hkac', dest='h3k27ac_path', 
+                        help='Path to the folder where the H3K27Ac ChIp-seq .bw files are stored', required=True)
+
 
   args = parser.parse_args(args=None if sys.argv[1:] else ['--help'])
   single_prediction(args.output_path, args.celltype, 
                       args.chr_name, args.start,
                       args.model_path, 
-                      args.seq_path, args.ctcf_path, args.atac_path)
+                      args.seq_path, args.ctcf_path, args.atac_path, args.h3k27ac_path)
 
-def single_prediction(output_path, celltype, chr_name, start, model_path, seq_path, ctcf_path, atac_path):
-    seq_region, ctcf_region, atac_region = infer.load_region(chr_name, 
-            start, seq_path, ctcf_path, atac_path)
-    pred = infer.prediction(seq_region, ctcf_region, atac_region, 
-                                   model_path)
+def single_prediction(output_path, celltype, chr_name, start, model_path, seq_path, ctcf_path, atac_path, h3k27ac_path):
+    seq_region, ctcf_region, atac_region, h3k27ac_region = infer.load_region(chr_name, start, seq_path, ctcf_path, atac_path, h3k27ac_path)
+    pred = infer.prediction(seq_region, ctcf_region, atac_region, h3k27ac_region, model_path)
     plot = plot_utils.MatrixPlot(output_path, pred, 'prediction', celltype, 
                                  chr_name, start)
     plot.plot()

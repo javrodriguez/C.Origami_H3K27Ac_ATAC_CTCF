@@ -12,7 +12,7 @@ def load_default(model_path):
     load_checkpoint(model, model_path)
     return model
 
-def get_model(model_name, mid_hidden, num_genomic_features=2):
+def get_model(model_name, mid_hidden, num_genomic_features=3):
     ModelClass = getattr(corigami_models, model_name)
     model = ModelClass(num_genomic_features, mid_hidden = mid_hidden)
     return model

@@ -8,5 +8,6 @@ python corigami/inference/editing.py \
     --seq "../corigami_data/data/hg38/dna_sequence" \
     --ctcf "../corigami_data/data/hg38/imr90/genomic_features/ctcf_log2fc.bw" \
     --atac "../corigami_data/data/hg38/imr90/genomic_features/atac.bw" \
+    --hkac "../corigami_data/data/hg38/imr90/genomic_features/h3k27ac.bw" \
     --del-start 1500000 \
     --del-width 100000 \

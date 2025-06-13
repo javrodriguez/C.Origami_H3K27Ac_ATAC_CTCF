@@ -33,11 +33,11 @@ def load_region(chr_name, start, seq_path, ctcf_path, atac_path, h3k27ac_path, w
 
 def load_data_default(chr_name, seq_path, ctcf_path, atac_path, h3k27ac_path):
     from corigami.data.data_feature import SequenceFeature, GenomicFeature
-    seq_chr_path = os.path.join(seq_path, f'{chr_name}.fa.gz')
+    seq_chr_path = os.path.join(seq_path.strip('='), f'{chr_name}.fa.gz')
     seq = SequenceFeature(path = seq_chr_path)
-    ctcf = GenomicFeature(path = ctcf_path, norm = None)
-    atac = GenomicFeature(path = atac_path, norm = 'log')
-    h3k27ac = GenomicFeature(path = h3k27ac_path, norm = 'log')
+    ctcf = GenomicFeature(path = ctcf_path.strip('='), norm = None)
+    atac = GenomicFeature(path = atac_path.strip('='), norm = 'log')
+    h3k27ac = GenomicFeature(path = h3k27ac_path.strip('='), norm = 'log')
     return seq, ctcf, atac, h3k27ac
 
 def get_data_at_interval(chr_name, start, end, seq, ctcf, atac, h3k27ac):

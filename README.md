@@ -8,18 +8,19 @@ For the original C.Origami implementation, please visit: [https://github.com/tan
 
 This version adds H3K27Ac ChIP-seq data as an additional input feature alongside the original CTCF ChIP-seq and ATAC-seq data. The model architecture has been modified to incorporate this new feature, which can provide additional information about active regulatory regions.
 
-## Dependencies and Installation
+# Dependencies and Installation
 
-# Download C.Origami repo
-git clone https://github.com/javrodriguez/C.Origami_vPlusH3K27Ac.git
+## Download C.Origami repo
+git clone https://github.com/javrodriguez/corigami_plus_h3k27ac.git
+
+## Create environment
 cd C.Origami_vPlusH3K27Ac
 
-# Create environment
-conda create -n corigami_vPlusH3K27Ac python==3.9 pytorch==1.12.0 torchvision==0.13.0 pytorch-cuda=11.8 pandas==1.3.0 matplotlib==3.3.2 pybigwig==0.3.18 omegaconf==2.1.1 tqdm==4.64.0 pytorch-lightning=1.9 scikit-image lightning-bolts mkl==2024.0 -c pytorch -c nvidia
+conda create -n corigami_plus_h3k27ac python==3.9 pytorch==1.12.0 torchvision==0.13.0 pytorch-cuda=11.8 pandas==1.3.0 matplotlib==3.3.2 pybigwig==0.3.18 omegaconf==2.1.1 tqdm==4.64.0 pytorch-lightning=1.9 scikit-image lightning-bolts mkl==2024.0 -c pytorch -c nvidia
 
-conda activate corigami_vPlusH3K27Ac
+conda activate corigami_plus_h3k27ac
 
-# Install C.Origami
+## Install C.Origami
 pip install -e .
 
 ## Data Requirements
@@ -133,7 +134,7 @@ If you use this modified version of C.Origami in your project, please cite both:
 
 2. This modified version:
 ```BibTeX
-@software{corigami_h3k27ac,
+@software{corigami_plus_h3k27ac,
     author = {Rodriguez, Javier},
     title = {C.Origami with H3K27Ac},
     year = {2024},

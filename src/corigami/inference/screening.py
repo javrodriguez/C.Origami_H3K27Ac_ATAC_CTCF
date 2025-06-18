@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import sys
 import torch
+import matplotlib.pyplot as plt
 
 import corigami.inference.utils.inference_utils as infer
 from corigami.inference import editing 
@@ -114,15 +115,52 @@ def predict_difference(chr_name, start, deletion_start, deletion_width, model, s
     # Define window which accomodates deletion
     end = start + 2097152 + deletion_width
     seq_region, ctcf_region, atac_region, h3k27ac_region = infer.get_data_at_interval(chr_name, start, end, seq, ctcf, atac, h3k27ac)
+
+    # === DEBUGGING: Print and plot input features ===
+    print("DEBUG: chr_name:", chr_name)
+    print("DEBUG: start:", start, "end:", end)
+    print("DEBUG: seq_region shape:", seq_region.shape)
+    print("DEBUG: ctcf_region shape:", ctcf_region.shape)
+    print("DEBUG: atac_region shape:", atac_region.shape)
+    print("DEBUG: h3k27ac_region shape:", h3k27ac_region.shape)
+    print("DEBUG: seq_region sum:", np.sum(seq_region))
+    print("DEBUG: ctcf_region sum:", np.sum(ctcf_region))
+    print("DEBUG: atac_region sum:", np.sum(atac_region))
+    print("DEBUG: h3k27ac_region sum:", np.sum(h3k27ac_region))
+
+    # Plot the features
+    plt.figure(figsize=(12, 4))
+    plt.plot(ctcf_region, label='CTCF')
+    plt.plot(atac_region, label='ATAC')
+    plt.plot(h3k27ac_region, label='H3K27Ac')
+    plt.legend()
+    plt.title(f"Input Genomic Features: {chr_name}:{start}-{end}")
+    plt.xlabel("Genomic bin")
+    plt.ylabel("Feature value")
+    plt.savefig(f"debug_input_features_{chr_name}_{start}_{end}.png")
+    plt.close()
+    # === END DEBUGGING ===
+
     # Unmodified inputs
     inputs = preprocess_prediction(chr_name, start, seq_region, ctcf_region, atac_region, h3k27ac_region)
     pred = model(inputs)[0].detach().cpu().numpy() # Prediction
+
     # Inputs with deletion
     inputs_deletion = preprocess_deletion(chr_name, start, deletion_start, 
             deletion_width, seq_region, ctcf_region, atac_region, h3k27ac_region) # Get data
     pred_deletion = model(inputs_deletion)[0].detach().cpu().numpy() # Prediction
+
     # Compare inputs:
     diff_map = pred_deletion - pred
+
+    # === DEBUGGING: Check symmetry of WT output ===
+    asymmetry = np.abs(pred - pred.T)
+    print("DEBUG: WT output max asymmetry:", np.max(asymmetry))
+    print("DEBUG: WT output mean asymmetry:", np.mean(asymmetry))
+    np.save(f"debug_WT_output_{chr_name}_{start}_{end}.npy", pred)
+    np.save(f"debug_WT_asymmetry_{chr_name}_{start}_{end}.npy", asymmetry)
+    # === END DEBUGGING ===
+
     return pred, pred_deletion, diff_map
 
 def plot_combination(output_path, celltype, chr_name, start, deletion_start, deletion_width, pred, pred_deletion, diff_map, plot_type = 'point_screening'):

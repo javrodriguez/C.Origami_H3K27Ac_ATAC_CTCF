@@ -184,16 +184,6 @@ def preprocess_prediction(chr_name, start, seq_region, ctcf_region, atac_region,
     # Delete inputs
     seq_region, ctcf_region, atac_region, h3k27ac_region = trim(seq_region, ctcf_region, 
                                                 atac_region, h3k27ac_region)
-    # === DEBUGGING: Print first and last 10 values of each feature after trimming ===
-    print("DEBUG (TRIMMED): seq_region[:10]", seq_region[:10])
-    print("DEBUG (TRIMMED): seq_region[-10:]", seq_region[-10:])
-    print("DEBUG (TRIMMED): ctcf_region[:10]", ctcf_region[:10])
-    print("DEBUG (TRIMMED): ctcf_region[-10:]", ctcf_region[-10:])
-    print("DEBUG (TRIMMED): atac_region[:10]", atac_region[:10])
-    print("DEBUG (TRIMMED): atac_region[-10:]", atac_region[-10:])
-    print("DEBUG (TRIMMED): h3k27ac_region[:10]", h3k27ac_region[:10])
-    print("DEBUG (TRIMMED): h3k27ac_region[-10:]", h3k27ac_region[-10:])
-    # === END DEBUGGING ===
     # Process inputs
     inputs = infer.preprocess_default(seq_region, ctcf_region, atac_region, h3k27ac_region)
     return inputs
